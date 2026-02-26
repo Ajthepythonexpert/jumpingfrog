@@ -766,7 +766,7 @@ def page_home():
  
     <div class="center-wrapper">
         <div class="hero">
-            <div class="hero-tag">🐸 Powered by Scrapy + Advertools</div>
+            <div class="hero-tag">🐸 Powered by KineticFrog: High-Velocity Crawl-x Engine</div>
             <h1 class="hero-title">
                 Crawl. Audit.<br><span>Dominate.</span>
             </h1>
@@ -819,7 +819,7 @@ def page_home():
     st.markdown("""
     <div style="text-align:center;margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border);">
         <span style="font-family:'Space Mono',monospace;font-size:0.7rem;color:#4a6a4a;">
-            webaudit pro · built with scrapy + streamlit · 🐸
+            🐸 KineticFrog · built with Crawl-x· 🐸
         </span>
     </div>
     """, unsafe_allow_html=True)
