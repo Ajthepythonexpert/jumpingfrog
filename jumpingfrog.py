@@ -20,8 +20,8 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap%27);
  
 :root {
-    --bg: #0a0f0a;
-    --surface: #111811;
+    --bg: #000000;
+    --surface: #000000;
     --card: #162016;
     --border: #2a4a2a;
     --green: #4ade80;
@@ -357,7 +357,7 @@ html, body, [data-testid="stAppViewContainer"] {
  
 /* Log output */
 .log-box {
-    background: #060d06;
+    background: #000000;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 1rem;
