@@ -819,7 +819,7 @@ def page_home():
     st.markdown("""
     <div style="text-align:center;margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border);">
         <span style="font-family:'Space Mono',monospace;font-size:0.7rem;color:#4a6a4a;">
-            🐸 KineticFrog · built with Crawl-x· 🐸
+            🐸 KineticFrog · 'Screaming' Not Required · built with Crawl-x· 🐸
         </span>
     </div>
     """, unsafe_allow_html=True)
