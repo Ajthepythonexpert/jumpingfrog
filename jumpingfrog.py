@@ -673,49 +673,65 @@ def build_sitemap_script(sitemap_url, out_json):
     out_json = safe_path(out_json)
     return f"""
 import scrapy
-from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from scrapy.crawler import CrawlerProcess
 import advertools as adv
 from urllib.parse import urlparse
 import json
- 
-class SitemapSpider(CrawlSpider):
+
+class SitemapSpider(scrapy.Spider):
     name = 'sitemap_spider'
     custom_settings = {{
-        'USER_AGENT': 'Mozilla/5.0 AppleWebKit/537.36',
-        'DOWNLOAD_DELAY': 0.5,
-        'LOG_LEVEL': 'ERROR',
+        'USER_AGENT': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'DOWNLOAD_DELAY': 0.3,
+        'LOG_LEVEL': 'INFO',
+        'ROBOTSTXT_OBEY': False,
     }}
- 
+
     def __init__(self):
         super().__init__()
         parsed = urlparse("{sitemap_url}")
         self.allowed_domains = [parsed.netloc]
-        self.start_urls = ["{sitemap_url}".replace('sitemap.xml', '')]
+        # Set start URL to the folder level
+        self.start_url = "{sitemap_url}".replace('sitemap.xml', '')
         self.folder_path = parsed.path.replace('sitemap.xml', '')
         self.live_urls = []
         self.sitemap_urls = []
+        self.visited = set()
+        
+        # Pull Sitemap URLs immediately
         try:
             df = adv.sitemap_to_df("{sitemap_url}")
             self.sitemap_urls = df['loc'].dropna().unique().tolist()
-        except: pass
-        self._rules = (Rule(LinkExtractor(allow=self.folder_path), callback='parse_item', follow=True),)
-        self._compile_rules()
- 
+        except: 
+            pass
+
+    def start_requests(self):
+        yield scrapy.Request(self.start_url, callback=self.parse_item)
+
     def parse_item(self, response):
+        if response.url in self.visited:
+            return
+        self.visited.add(response.url)
+        
         if response.status == 200:
             self.live_urls.append(response.url)
- 
+            
+            # Extract and follow links recursively
+            le = LinkExtractor(allow=self.folder_path)
+            for link in le.extract_links(response):
+                if link.url not in self.visited:
+                    yield scrapy.Request(link.url, callback=self.parse_item)
+
     def closed(self, reason):
         with open("{out_json}", "w") as f:
-            json.dump({{'live': self.live_urls, 'sitemap': self.sitemap_urls}}, f)
- 
+            json.dump({{'live': list(set(self.live_urls)), 'sitemap': self.sitemap_urls}}, f)
+
 process = CrawlerProcess()
 process.crawl(SitemapSpider)
 process.start()
 """
- 
+
 def df_to_excel_bytes(sheets: dict) -> bytes:
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="openpyxl") as writer:
