@@ -231,7 +231,7 @@ html, body, [data-testid="stAppViewContainer"] {
 }
  
 /* Input styling */
-.stTextInput > div > div > input {
+.stTextInput > div > div > input, .stTextArea > div > div > textarea {
     background: var(--card) !important;
     border: 1px solid var(--border) !important;
     border-radius: 8px !important;
@@ -241,12 +241,12 @@ html, body, [data-testid="stAppViewContainer"] {
     padding: 0.65rem 1rem !important;
 }
  
-.stTextInput > div > div > input:focus {
+.stTextInput > div > div > input:focus, .stTextArea > div > div > textarea:focus {
     border-color: var(--green) !important;
     box-shadow: 0 0 0 2px #4ade8022 !important;
 }
  
-.stTextInput > label {
+.stTextInput > label, .stTextArea > label {
     color: var(--text-dim) !important;
     font-family: 'Space Mono', monospace !important;
     font-size: 0.75rem !important;
@@ -1034,6 +1034,11 @@ def page_sitemap():
  
     with st.form("sm_form"):
         sitemap_url = st.text_input("Sitemap XML URL", placeholder="https://example.com/sitemap.xml")
+        
+        # --- NEW FIELD FOR PATH EXCLUSIONS ---
+        exclude_paths = st.text_area("Paths to exclude (comma-separated)", 
+                                     placeholder="e.g. /aftersales-app/, /category/, /mkt-category/, /mkt-product/, /search?codes=, /marketing-app/, /product-app/, /medias/sys_master/, /store/resources/, /support/list/, /supportdetail/product/, /sys/auth/authorize, #, ?, /support/dob/, /products-list/, /category-page/, /mkt-category-page/, /myhome/, /myprofile/")
+        
         submitted = st.form_submit_button("🚀 Start Sitemap Audit")
  
     if submitted:
@@ -1065,6 +1070,13 @@ def page_sitemap():
  
         df_live = pd.DataFrame(list(set(data.get("live", []))), columns=["URL"])
         df_official = pd.DataFrame(data.get("sitemap", []), columns=["URL"]).drop_duplicates()
+        
+        # --- NEW FILTERING LOGIC ---
+        if exclude_paths:
+            excl_list = [p.strip() for p in exclude_paths.split(',') if p.strip()]
+            for excl in excl_list:
+                df_live = df_live[~df_live["URL"].str.contains(excl, regex=False, na=False)]
+                df_official = df_official[~df_official["URL"].str.contains(excl, regex=False, na=False)]
  
         missing_in_xml = df_live[~df_live["URL"].isin(df_official["URL"])]
         orphans = df_official[~df_official["URL"].isin(df_live["URL"])]
